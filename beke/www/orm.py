@@ -8,8 +8,13 @@ import logging
 import  asyncio, aiomysql
 
 #打印SQL日志：
+
+
+#logging.info详细打印
 def log(sql, args=()):
     logging.info('SQL: %s' % sql)
+
+
 
 #@asyncio.coroutine可以把一个 generator 标记为 coroutine 类型
 #创建全局连接池，由全局变量__pool存储：
@@ -17,16 +22,24 @@ def log(sql, args=()):
 def create_pool(loop, **kw):
     #打印创建数据库连接日志信息：
     logging.info('create database connection pool...')
+    
+    
     #声明'__pool'为全局变量：
     global __pool
+    
+
     #aiomysql.create_pool()创建连接到Mysql数据库池中的协程链接：
     __pool = yield from aiomysql.create_pool(
         host=kw.get('host', 'localhost'),           #数据库链接地址，默认localhost
         port=kw.get('port', 3306),                  #链接端口号，默认3306
         user=kw['user'],                            #登陆名
         password=kw['password'],                    #登陆密码
-        db=kw['db'],                                #数据库名
+        
+        db=kw['db'],
+        #数据库名
+        
         charset=kw.get('charset', 'utf8'),          #字符集设置，默认utf-8
+        
         autocommit=kw.get('autocommit', True),      #自动提交模式，默认True
         maxsize=kw.get('maxsize', 10),              #最大连接数，默认10
         minsize=kw.get('minsize', 1),               #最小连接数，默认1
@@ -36,15 +49,37 @@ def create_pool(loop, **kw):
 #创建Select方法
 @asyncio.coroutine
 def select(sql, args, size=None):
+    
+
     #打印SQL日志(查询调用时传递过来的sql语句和参数)：
     log(sql, args)
+
+    #声明为全局变量
     global __pool
+    
+    
     with (yield from __pool) as conn:
         #创建游标字典：
         cur = yield from conn.cursor(aiomysql.DictCursor)
         #执行SQL语句；SQL语句的占位符是?，而MySQL的占位符是%s，需要进行处理:
         #execute(query, args=None)：query(str)-sql语句；args(list)-sql语句的替换参数列表(tuple或list)。
         yield from cur.execute(sql.replace('?', '%s'), args or ())
+
+'''注释：
+   yield from的用法，下面两个函数等价
+>>> def sub_generator():
+    yield 1
+    yield 2
+       for val in counter(10): yield val
+
+>>> def sub_generator():
+...   yield 1
+...   yield 2
+...   yield from counter(10)
+  File "<stdin>", line 4
+    yield from counter(10)            
+'''
+
         #根据size参数判断返回结果为指定组结果集还是全部结果结果集：
         if size:
             #返回指定的size组结果集：
