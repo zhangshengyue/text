@@ -6,6 +6,8 @@ from apis import APIError
 #端口错误返回
 
 #定义get装饰器；这样，一个函数通过@get()的装饰就附带了URL信息。
+#         @get
+#         now():   ==get(now)
 def get(path):
     '''
     Define decorator @get('/path')
@@ -39,7 +41,7 @@ def post(path):
 def get_required_kw_args(fn):
     args = []
     #inspect.signature(fn)：表示fn函数的调用签名及其返回注释，
-	#                    为函数提供一个Parameter参数对象存储参数集合。
+	#     args = []         为函数提供一个Parameter参数对象存储参数集合。
     #inspect.signature(fn).parameters：参数名与参数对象的有序映射。
     params = inspect.signature(fn).parameters
     for name, param in params.items():  #.items()返回一个由tuple(此处包含name, parameters object)组成的list。
@@ -115,20 +117,23 @@ class RequestHandler(object):
 
     #@asyncio.coroutine装饰，变成一个协程:
     @asyncio.coroutine
-    def __call__(self, request):    #Request 实例为 aiohttp.web 自动创建的。
+    def __call__(self, request):    #Request 实例为 aiohttp.web 自动创建的。??
         kw = None
         #判断函数是否包含“可变参数、命名关键字参数、关键字参数”，以及是否能获取到参数(不包含缺省)名称列表：
         if self._has_var_kw_arg or self._has_named_kw_args or self._required_kw_args:
             #判断HTTP请求方法使用的类型：
             if request.method == 'POST':
                 #Contern-Type 标明发送或者接收的实体的MIME类型。例如：Content-Type: text/html
-                #判断POST请求的实体MIME类型是否存在：
+                #判断POST请求的实体MIME类型是否存在08：
                 if not request.content_type:
                     #MIME类型不存在则返回错误信息：
                     return web.HTTPBadRequest('Missing Content-Type.')
                 #将POST请求的实体MIME类型值转换为全小写格式：
                 ct = request.content_type.lower()
-                #str.startswith(str,[strbeg(int)],[strend(int)]):检查字符串是否是以指定子字符串开头，返回True/False。若参数 beg 和 end 指定值，则在指定范围内检查。
+
+                #str.startswith(str,[strbeg(int)],[strend(int)]):检查字符串是否是以指定子字符串开头，
+                #返回True/False。若参数 beg 和 end 指定值，则在指定范围内检查。
+
                 #检查“content_type”类型是否为“application/json”开头的字符串类型：
                 if ct.startswith('application/json'):
                     #以JSON编码读取请求内容：
@@ -204,7 +209,9 @@ def add_static(app):
     #os.path.join():将分离的各部分组合成一个路径名。
     path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static')
     #aiohttp.web.Application.router: 返回地址实例属性(只读)。
-    #aiohttp.web.UrlDispatcher.add_static(prefix, path)-prefix：URL地址前缀；给返回的静态文件添加地址和处理程序，返回新的静态地址实例。
+    
+    #aiohttp.web.UrlDispatcher.add_static(prefix, path)-
+    #prefix：URL地址前缀；给返回的静态文件添加地址和处理程序，返回新的静态地址实例。
     app.router.add_static('/static/', path)
     #打印(添加静态地址信息)日志：
     logging.info('add static %s => %s' % ('/static/', path))
@@ -233,6 +240,7 @@ def add_route(app, fn):
 def add_routes(app, module_name):
     #str.rfind(str):返回字符串最后一次出现的位置，如果没有匹配项则返回-1。
     n = module_name.rfind('.')
+    
     if n == (-1):
         #没有匹配项，则导入“module_name”模块：
         mod = __import__(module_name, globals(), locals())

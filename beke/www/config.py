@@ -11,8 +11,15 @@ class Dict(dict):
     '''
     #初始化已实例化后的所有父类对象，方便后续使用或扩展父类中的行为：
     def __init__(self, names=(), values=(), **kw):
-        super(Dict, self).__init__(**kw)
-        #zip([seql, ...])接受一系列可迭代对象作为参数，将对象中对应的元素打包成一个个tuple（元组），然后返回由这些tuples组成的list（列表）。
+        
+
+
+        super(Dict, self).__init__(**kw)#?????什么个用法
+        
+
+
+        #zip([seql, ...])接受一系列可迭代对象（如.next()调用）作为参数，将对象中对应的元素打包成一个个tuple（元组），
+        #然后返回由这些tuples组成的list（列表）。
         # 若传入参数的长度不等，则返回list的长度和参数中长度最短的对象相同。
         for k, v in zip(names, values):
             self[k] = v
